@@ -1,0 +1,36 @@
+# 教師あり学習 (回帰)
+# (Aidemy データ分析講座(添削課題6))
+import pandas as pd
+from sklearn.model_selection import train_test_split
+# 必要なモジュールを追記してください。
+from sklearn.linear_model import LinearRegression  # 線形回帰
+from sklearn.linear_model import Ridge             # ridge回帰
+from sklearn.linear_model import Lasso             # lasso回帰
+# データの読み込み
+concrete_data = pd.read_excel("./5010_regression_data/Concrete_Data.xls")
+concrete_train_X, concrete_test_X, concrete_train_y, concrete_test_y = train_test_split(
+    concrete_data.drop('Concrete compressive strength(MPa, megapascals) ', axis=1),
+    concrete_data['Concrete compressive strength(MPa, megapascals) '],random_state=42)
+print("concrete_data (データセット)")
+display(concrete_data)
+print()
+# 以下にコードを記述してください。
+# 線形回帰
+model1 = LinearRegression()                     # アルゴリズム
+model1.fit(concrete_train_X, concrete_train_y)  # 学習
+# ridge回帰
+model2 = Ridge()
+model2.fit(concrete_train_X, concrete_train_y)
+# lasso回帰
+model3 = Lasso()
+model3.fit(concrete_train_X, concrete_train_y)
+# 決定係数
+print("決定係数")
+print("線形回帰 ：{:.4f}".format(model1.score(concrete_test_X, concrete_test_y)))
+print("ridge回帰：{:.4f}".format(model2.score(concrete_test_X, concrete_test_y)))
+print("lasso回帰：{:.4f}".format(model3.score(concrete_test_X, concrete_test_y)))
+print("lasso回帰＞ridge回帰≒線形回帰")
+print()
+# 最もよい決定係数を算出したモデル
+print("ベストモデル")
+print("lasso回帰：{:.4f}".format(model3.score(concrete_test_X, concrete_test_y)))
