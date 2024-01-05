@@ -1,0 +1,30 @@
+# データハンドリング
+# (Aidemy データ分析講座(添削課題11))
+import pandas as pd
+import matplotlib.pyplot as plt
+# 株価データを読み込んでください
+stock_data = pd.read_csv("./5130_rnn_lstm_data/uniqlo_training_stocks_2012-2017.csv")
+#　stock_dataの値を出力 Dateが日付順になっていないことを確認
+print("stock_data (Dateが日付順になっていない)")
+print(stock_data.head(10))
+print()
+# Dateをstr型からdatetime型に変換
+stock_data['Date'] = pd.to_datetime(stock_data['Date'])
+# Dateを日付順にソート
+sorted_stock_data = stock_data.sort_values(['Date'])
+print("sorted_stock_data (Dateを日付順にソート)")
+print(sorted_stock_data.head(5))
+print()
+# Stock Trading列を抽出してください
+stock_trading = sorted_stock_data["Stock Trading"]
+print("stock_trading (Stock Trading列を抽出)")
+print(stock_trading.head(5))
+# plot()メソッドでプロットしてください
+plt.plot(stock_trading)
+# グラフを出力してください
+plt.show()
+print()
+# sorted_stock_dataを'sorted_stock_data'という名前でExcelファイルへ書き出してください
+stock_trading.to_excel("./5130_rnn_lstm_data/sorted_stock_data.xlsx", sheet_name='sorted_stock_data')
+print("sorted_stock_data (書き出したExcelファイル)")
+print(sorted_stock_data.head(10))
