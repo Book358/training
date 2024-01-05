@@ -1,0 +1,53 @@
+# Pandas (表計算)
+# (Aidemy データ分析講座(添削課題3))
+import pandas as pd
+store_data = {
+    "store": ["shibuya", "shinjuku", "yokohama", "meguro", "ikebukuro"],
+    "ID": [1, 2, 3, 4, 5]
+}
+store_df = pd.DataFrame(store_data)  # store_dfを作成
+data = {"ID": [1, 2, 3, 3, 2, 1],
+        "product": ["banana", "orange", "orange", "grape", "banana", "peach"],
+        "price": [200, 1000, 800, 100, 250, 900],
+        "quantity": [1, 2, 1, 2, 3, 2]}
+df = pd.DataFrame(data)  # dfを作成
+print("df")
+print(df)  # dfを出力
+print()
+print("store_df")
+print(store_df)  # store_dfを出力
+print()
+
+# 問題1
+# dfのインデックスが０から４までの要素、カラム名を出力してください。
+df_1 = df.iloc[0:5,:]
+print("問題1")
+print(df_1)
+print()
+
+# 問題2
+# df とstore_dfをkeyをIDとして完全外部結合してください。
+df_2 = pd.merge(df, store_df, on = "ID", how="outer")
+print("問題2")
+print(df_2)
+print()
+
+# 問題3
+# df とstore_dfをkeyをIDとして内部結合してください。
+df_3 = pd.merge(df, store_df, on='ID', how='inner')
+print("問題3")
+print(df_3)
+print()
+
+# 問題4
+# 問題3の回答にて作成したdf_3とgroupbyメソッドを用いてstore毎のID、price、quantityの平均値を出力してください。
+df_4 = df_3.groupby("store").mean()
+print("問題4")
+print(df_4)
+print()
+
+# 問題5
+# 問題3の回答にて作成したdf_3とdescribeメソッドを用いてID、price、quantityの要約統計量を出力してください。
+df_5 = df_3.describe()
+print("問題5")
+print(df_5)
