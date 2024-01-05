@@ -1,0 +1,69 @@
+# NumPy (数値計算)
+# (Aidemy データ分析講座(添削課題2))
+import numpy as np
+import time
+from numpy.random import rand
+# 行、列の大きさ
+N = 5000
+# 配列の初期化
+mat = rand(N, N)
+print("配列\n", mat)
+# Numpyの機能を使わずに計算
+print("\nNumpy使わず")
+# 開始時間の取得
+start = time.time()
+print("start：",start)
+# for文を使って、1番目の軸に沿って平均を計算
+mean_not_numpy = []
+for i in range(N):
+    mean_not_numpy.append(sum(mat[i]) / len(mat[i]))
+print("mean：", mean_not_numpy)
+# 出力形式を整えるため、numpy配列に変換
+print(np.array(mean_not_numpy))
+print(f'Total time when not using NumPy：{(time.time() - start):.2f}[sec]')
+# NumPyを使って計算
+print("\nNumpy使用")
+# 開始時間の取得
+start = time.time()
+print("start：", start)
+# NumPyの機能を使って、1番目の軸に沿って平均を計算
+mean_numpy = np.mean(mat, axis=0)
+print("mean：", mean_numpy)
+print(f'Total time when using NumPy：{(time.time() - start):.2f}[sec]')
+
+# 応用添削課題
+import numpy as np
+# 乱数の初期化
+np.random.seed(0)
+# 指定された大きさの画像を乱数を用いて生成する関数
+# 仮引数mは画像の縦の大きさ、nは画像の横の大きさです
+def make_image(m, n):
+    np.random.seed()
+    # m×n行列の各成分を0~5の値でランダムに満たしてください
+    image = np.random.randint(0,6,(m,n))
+    return image
+# 渡された行列の一部を変更する関数
+def change_matrix(matrix):
+    np.random.seed()
+    # 与えられた行列の形を取得し、shapeに代入してください
+    matrix = matrix.reshape(-1,1)
+    # 行列の各成分について、変更するかしないかをランダムに決めた上で
+    # 変更する場合は0~5のいずれかの整数にランダムに入れ替えてください
+    for i in range(len(matrix)):
+      if np.random.randint(0,2) == 1:
+        matrix[i] = np.random.randint(0, 6)
+    return matrix
+# ランダムに画像を作成
+image1 = make_image(3, 3)
+print("元画像(3×3)\n", image1)
+# ランダムに変更を適用する
+image2 = change_matrix(np.copy(image1))
+image2_reshape = np.reshape(image2, (3, 3))
+print("\nランダム変更後の画像\n",image2_reshape)
+# image1とimage2の差分を計算し、image3に代入してください
+image3 = image1 - image2_reshape
+print("\n差分\n", image3)
+# image3の各成分が絶対値である行列をもとめimage3に再代入してください
+image3 = np.abs(image3)
+# image3を出力
+print("\n差分(絶対値)\n", image3)
