@@ -1,0 +1,73 @@
+# 教師なし学習
+# (Aidemy データ分析講座(添削課題8))
+# 必要なライブラリのインポート
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+# PCAクラスを定義します
+class PCA:
+    def __init__(self):  # 初期化メソッド (インスタンス生成時に呼び出され、その処理が実行される)
+           pass          # 何も処理を行わない (中身が何もない)
+    # 以下のfitメソッドを完成させてください
+    def fit(self, X):
+        # 引数Xをインスタンス変数Xに代入します
+        self.X = X
+        # 受け取ったデータXを標準化してください
+        X = (X - X.mean(axis=0)) / X.std(axis=0)
+        # 標準化したデータの相関行列を計算してください
+        R = np.corrcoef(X.T)
+        # 相関行列を固有値分解し、固有値と固有ベクトルを求めてください
+        eigvals, eigvecs = np.linalg.eigh(R)
+        display(eigvals, eigvecs)
+        # 2次元に圧縮する特徴変換行列を作成してください
+        W = np.c_[eigvecs[:,-1], eigvecs[:,-2]]
+        # データXを特徴変換して得たデータをインスタンス変数dataに代入してください
+        self.data = X.dot(W)  # 次元削減
+# 実験データを読み込み、DataFrameを作成します
+df = pd.read_csv("./5030_unsupervised_learning_data/Data_Cortex_Nuclear.csv")
+print("df (データセット)")
+print(df.head(3))
+print()
+# 今回は使用しないタンパク質のデータである、21列目〜80列目を削除してください
+X = df.drop(df.columns[21:81], axis=1)
+print("X (特徴量, 21列目〜80列目を削除)")
+print(X.head(3))
+print()
+# 今回使用するクラスのマウスは計29匹なので、29×15=435個のデータを用います
+# 435行目以降は使わないので434行目までを抽出してください、なおdf.iloc[:n]とするとn-1行目までしか抽出できない点に注意してください
+X = X.iloc[:435,:]
+print("X (特徴量, 434行目までを抽出)")
+print(X.tail(3))
+print()
+# 欠損値nanを含む行をリストワイズ削除してください
+X = X.dropna()
+print("欠損値(NaN)の数")
+print(X.isnull().sum())
+print()
+# 最終列のclassを抽出し、ラベルyとして定義してください
+y = df.iloc[:435,-1]
+print("y：正解ラベル")
+print(y.head(3))
+print()
+# 0列目のMouseIDと目的変数であるclassを削除し、特徴量Xとして定義してくだい
+X = X.iloc[:,1:-1]
+print("X：特徴量 (MouseIDと目的変数(class)を削除)")
+print(X.head(3))
+print()
+# PCAクラスを用いてデータを分析してください
+pca = PCA()  # 主成分分析 (上記PCAクラスで自作したアルゴリズム)
+print("[学習実行(pca.fit(X))]")
+pca.fit(X)   # 学習
+print("[学習完了]")
+print()
+print("pca.data：特徴量 (次元削減後)")
+print(pca.data)
+print()
+# 圧縮したデータを取得し、matplotlibで表示してください
+X_pca = pca.data
+colors = ["r", "g", "b"]
+for label, color in zip(y.unique(), colors):
+    # 横軸(第一引数)にはX_pcaの0列目を、縦軸(第二引数)にはX_pcaの1列目を表示します
+    plt.scatter(X_pca.loc[y == label, 0], X_pca.loc[y == label, 1],c=color, label=label)
+plt.legend()
+plt.show()
