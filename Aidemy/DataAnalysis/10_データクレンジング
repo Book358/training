@@ -1,0 +1,88 @@
+# データクレンジング
+# (Aidemy データ分析講座(添削課題10))
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn import datasets
+from sklearn.metrics import accuracy_score
+#データのロード
+wine_data = datasets.load_wine()
+data = pd.DataFrame(wine_data.data, columns=wine_data.feature_names)  # 説明変数のDataFrmeを設定
+target = pd.DataFrame(wine_data.target, columns=['target'])           # 目的変数のDataFrmeを設定
+print("data (特徴量)")
+print(data.head(3))
+print(data.shape)
+print()
+print("target (正解ラベル)")
+print(target.head(3))
+print(target.shape)
+print()
+# 説明変数のDataFraemと目的変数のDataFrameをつなげて wine_df を作成
+wine_df = pd.concat([data,target],axis=1)
+wine_df = wine_df.drop(columns=['magnesium','proline']) # 値のスケールが異なる'magnesium','proline'の列を削除します
+print("wine_df (dataとtargetを連結し、'magnesium','proline'の列を削除)")
+print(wine_df.head(3))
+print(wine_df.shape)
+print()
+# 欠損値のあるデータの作成
+# 以下のデータを欠損
+# 10. color_intensity 色の強さ
+# 11. hue 色合い
+# 12. od280/od315_of_diluted_wines ワインの希釈度合い
+np.random.seed(32)
+mask5 = np.random.rand(len(wine_df))<0.05                     # 5% のデータを欠損させる
+mask3 = np.random.rand(len(wine_df))<0.03                     # 3% のデータを欠損させる
+wine_df.loc[mask5,['color_intensity']] = np.nan               # color_intensityのデータを5%欠損させます
+wine_df.loc[mask3,['hue']] = np.nan                           # hueのデータを3%欠損させます
+wine_df.loc[mask5,['od280/od315_of_diluted_wines']] = np.nan  # od280/od315_of_diluted_winesのデータを5%欠損させます
+# 欠損値の状況を確認します。
+print("wine_df (欠損データ)")
+print(wine_df.isnull().sum())
+print(wine_df.shape)
+print()
+# 欠損値を埋めてください
+# dropnaを用いてリストワイズ削除を行なってくだい
+wine_df_listwise = wine_df.dropna()
+print("wine_df_listwise (リストワイズ削除)")
+print(wine_df_listwise.isnull().sum())
+print(wine_df_listwise.shape)
+print()
+# 欠損値を埋めてください
+# fillnaを用いてNaNの部分に０を代入してください
+wine_df_zero = wine_df.fillna(0)
+print("wine_df_zero (0を代入)")
+print(wine_df_zero.isnull().sum())
+print(wine_df_zero.shape)
+print()
+# 欠損値を埋めてください
+# fillnaを用いてNaNの部分に、NaNの入っている前(上)の行の値を代入してください
+wine_df_ffill = wine_df.fillna(method="ffill")
+print("wine_df_ffill (前(上)の行の値を代入)")
+print(wine_df_ffill.isnull().sum())
+print(wine_df_ffill.shape)
+print()
+# 欠損値を埋めてください
+# fillnaを用いてNaNの部分にその列の平均値を代入してください
+wine_df_mean = wine_df.fillna(wine_df.mean())
+print("wine_df_mean (列の平均値を代入)")
+print(wine_df_mean.isnull().sum())
+print(wine_df_mean.isnull().shape)
+print()
+# 欠損値の処理を行なったデータを使ってRandomForestClassifierで学習を行います
+wine_df_all = [wine_df_listwise, wine_df_zero, wine_df_ffill, wine_df_mean]  # 欠損値補完データ(4種)
+print("学習モデルの予測精度 (欠損補完方法による比較)")
+for i, wine_df_tmp in enumerate(wine_df_all):
+    y = wine_df_tmp["target"]
+    X = wine_df_tmp.drop("target", axis=1)
+    # データ分割
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+    # 学習
+    model = RandomForestClassifier()
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)  # 予測
+    if i == 0 : df_type = 'listwise'
+    if i == 1 : df_type = 'zero'
+    if i == 2 : df_type = 'ffill'
+    if i == 3 : df_type = 'mean'
+    print("{:12s}を用いた欠損値補完:  accuracy_score = {:<.3f}".format(df_type,accuracy_score(y_test, y_pred)))
