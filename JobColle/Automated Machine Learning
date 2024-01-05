@@ -1,0 +1,153 @@
+# Automated Machine Learning
+# (AIJobColle 機械学習講座(最終開発課題))
+import pandas as pd
+df = pd.read_csv("/content/drive/MyDrive/Datasets/AutomatedMachineLearning_train.csv", header=0)
+X = df.iloc[:,2:]   # 特徴量(第3カラム以降)
+Y = df.iloc[:,1:2]  # 正解ラベル(第2カラムleft)
+display(X.head(3))
+display(Y.head(3))
+
+# one-hotエンコード
+category_columns = ['sales','salary']  # カテゴリカル変数
+X_one = pd.get_dummies(X,
+                       dummy_na=True,             # ダミー変数(0or1)に変換 (NaNも含めた変換はTrue)
+                       columns=category_columns)  # カテゴリカル変数
+display(X_one.head(3))
+
+# 欠損値補完
+from sklearn.impute import SimpleImputer
+X_fin = SimpleImputer().fit_transform(X_one)  # 特徴量(zスコア変換後)
+display(X_fin)
+
+# 交差検証の為、データ分割
+from sklearn.model_selection import train_test_split
+x_train, x_test, y_train, y_test = train_test_split(X_fin,           # 特徴量
+                                                    Y,               # 正解ラベル
+                                                    test_size=0.3,   # テストサイズ：30%
+                                                    random_state=1)  # 乱数：1
+
+# アルゴリズムとパイプラインの構築 (二値分類)
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler         # 標準化(平均0,分散1)
+from sklearn.neighbors import KNeighborsClassifier       # K−近傍法
+from sklearn.linear_model import LogisticRegression      # ロジスティック回帰
+from sklearn.svm import SVC, LinearSVC                   # サポートベクターマシン
+from sklearn.tree import DecisionTreeClassifier          # 決定木
+from sklearn.ensemble import RandomForestClassifier      # ランダムフォレスト
+from sklearn.ensemble import GradientBoostingClassifier  # 勾配ブースティング
+pipelines = {
+             # K−近傍法
+      'knn': Pipeline([('scl',StandardScaler()), ('est',KNeighborsClassifier())]),
+             # ロジスティック回帰
+ 'logistic': Pipeline([('scl',StandardScaler()), ('est',LogisticRegression(random_state=1))]),
+             # サポートベクターマシン
+      'svc': Pipeline([('scl',StandardScaler()), ('est',SVC(C=1.0, kernel='rbf', class_weight='balanced', random_state=1))]),
+     'lsvc': Pipeline([('scl',StandardScaler()), ('est',LinearSVC(C=1.0, class_weight='balanced', random_state=1))]),
+
+             # ツリー系(標準化不要)
+             # 決定木
+    'tree1': Pipeline([('est',DecisionTreeClassifier(random_state=1))]),  # デフォルト
+    'tree2': Pipeline([('est',DecisionTreeClassifier(max_depth=5,         # 深さ5
+                                                     random_state=1))]),
+    'tree3': Pipeline([('est',DecisionTreeClassifier(max_depth=10,        # 深さ10 ✓
+                                                     random_state=1))]),
+    'tree4': Pipeline([('est',DecisionTreeClassifier(max_depth=50,        # 深さ50
+                                                     random_state=1))]),
+             # ランダムフォレスト
+      'rf1': Pipeline([('est',RandomForestClassifier(random_state=1))]),  # デフォルト
+      'rf2': Pipeline([('est',RandomForestClassifier(n_estimators=10,     # 決定木10
+                                                     random_state=1))]),
+      'rf3': Pipeline([('est',RandomForestClassifier(n_estimators=100,    # 決定木100
+                                                     random_state=1))]),
+      'rf4': Pipeline([('est',RandomForestClassifier(n_estimators=200,    # 決定木200 ✓
+                                                     random_state=1))]),
+      'rf5': Pipeline([('est',RandomForestClassifier(max_depth=5,         # 深さ5
+                                                     random_state=1))]),
+      'rf6': Pipeline([('est',RandomForestClassifier(max_depth=10,        # 深さ10
+                                                     random_state=1))]),
+      'rf7': Pipeline([('est',RandomForestClassifier(max_depth=50,        # 深さ50 ✓
+                                                     random_state=1))]),
+      'rf8': Pipeline([('est',RandomForestClassifier(max_features='sqrt', # 特徴量の選択sqrt
+                                                     random_state=1))]),
+      'rf9': Pipeline([('est',RandomForestClassifier(max_features='log2', # 特徴量の選択100log2 ✓
+                                                     random_state=1))]),
+     'rf10': Pipeline([('est',RandomForestClassifier(n_estimators=200,    # 決定木200,深さ50,特徴量の選択log2
+                                                     max_depth=50,
+                                                     max_features='log2',
+                                                     random_state=1))]),
+             # 勾配ブースティング
+      'gb1': Pipeline([('est',GradientBoostingClassifier(random_state=1))]),  # デフォルト
+      'gb2': Pipeline([('est',GradientBoostingClassifier(n_estimators=100,    # 学習器100
+                                                         random_state=1))]),
+      'gb3': Pipeline([('est',GradientBoostingClassifier(n_estimators=200,    # 学習器200
+                                                         random_state=1))]),
+      'gb4': Pipeline([('est',GradientBoostingClassifier(n_estimators=500,    # 学習器500
+                                                         random_state=1))]),
+      'gb5': Pipeline([('est',GradientBoostingClassifier(n_estimators=1000,   # 学習器1000 ✓
+                                                         random_state=1))]),
+      'gb6': Pipeline([('est',GradientBoostingClassifier(max_depth=5,         # 深さ5
+                                                         random_state=1))]),
+      'gb7': Pipeline([('est',GradientBoostingClassifier(max_depth=10,        # 深さ10 ✓ (best)
+                                                         random_state=1))]),
+      'gb8': Pipeline([('est',GradientBoostingClassifier(max_depth=15,        # 深さ15
+                                                         random_state=1))]),
+      'gb9': Pipeline([('est',GradientBoostingClassifier(learning_rate=0.05,  # 学習率0.05
+                                                         random_state=1))]),
+     'gb10': Pipeline([('est',GradientBoostingClassifier(learning_rate=0.2,   # 学習率0.2 ✓
+                                                         random_state=1))]),
+     'gb11': Pipeline([('est',GradientBoostingClassifier(n_estimators=1000,   # 学習器1000,深さ10,学習率0.2
+                                                         max_depth=10,
+                                                         learning_rate=0.2,
+                                                         random_state=1))])
+}
+
+# 機械学習＆モデル評価
+from sklearn.metrics import accuracy_score  # 評価指標(分類)
+scores = {}
+for pipe_name, pipeline in pipelines.items():
+    pipeline.fit(x_train, y_train)  # 学習
+    scores[(pipe_name,'train')] = accuracy_score(y_train, pipeline.predict(x_train))  # 評価指標
+    scores[(pipe_name,'test')] = accuracy_score(y_test, pipeline.predict(x_test))
+eva = pd.Series(scores).unstack()
+display(eva.sort_values('test', ascending=False))
+# 工夫した点
+# ハイパーパラメータを指定しない状態で、ツリー系アルゴリズムのスコアが比較的高かった為、
+# 決定木,ランダムフォレスト,勾配ブースティングに的を絞り、ハイパーパラメータを色々と変えて最適なアルゴリズムを探しました。
+
+# 学習モデルの保存・読込
+import joblib
+est = GradientBoostingClassifier(max_depth=10,    # ベストモデル(gb7:0.987)
+                                 random_state=1)
+best_model = est.fit(x_train, y_train)    # 学習
+joblib.dump(best_model, 'best_model')     # モデルの保存
+loaded_model = joblib.load('best_model')  # モデルの読込
+display(loaded_model)
+
+# 検証用データの前処理
+df = pd.read_csv("/content/drive/MyDrive/Datasets/AutomatedMachineLearning_test.csv", header=0)
+X = df.iloc[:,2:]
+Y = df.iloc[:,1:2]
+category_columns = ['sales','salary']
+X_one = pd.get_dummies(X,
+                       dummy_na=True,
+                       columns=category_columns)
+X_fin = SimpleImputer().fit_transform(X_one)
+display(Y.head(3))
+display(X_fin)
+
+# 検証用データでの予測確率
+display(loaded_model.predict_proba(X_fin)[:10,1])  # 正例(y=1)
+
+# 結果ファイルの作成
+# ID(index)
+df1 = df["index"]
+# 予測確率(left_PD)
+result = loaded_model.predict_proba(X_fin)[:,1]
+df2 = pd.DataFrame(result)
+df2.columns = ["left_PD"]
+# データフレームを作成
+df_cat = pd.concat([df1,df2], axis=1)  # 連結(ID+予測確率)
+display(df_cat)
+
+# CSV形式で保存
+df_cat.to_csv("/content/drive/MyDrive/Datasets/AutomatedMachineLearning_submission.csv", index=False, header=True)  # ヘッダーあり
