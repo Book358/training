@@ -1,0 +1,101 @@
+# Matplotlib (可視化)
+# (Aidemy データ分析講座(添削課題4))
+import math
+import matplotlib.pyplot as plt
+import numpy as np
+# 描画用の点を用意しています
+x1 = np.linspace(-1, 1, 200)
+y1 = [x**4 - x**2 + 6 for x in x1]
+x2 = np.linspace(-8, -1, 700)
+y2 = [12 / (abs(x) + 1) for x in x2]
+x3 = np.linspace(1, 8, 700)
+y3 = [12 / (abs(x) + 1) for x in x3]
+x4 = np.linspace(-2, 2, 400)
+y4 = [1/2 * math.cos(6*x) + 7/2 for x in x4]
+# figureオブジェクトを作成してください
+fig = plt.figure()
+# # axesオブジェクトを2行2列に分割し、左上に (x1,y1) を描画してください
+ax1 = fig.add_subplot(2,2,1)
+ax1.plot(x1, y1)
+# axesオブジェクトを2行2列に分割し、右上に (x2,y2), (x3,y3) を重ねて描画してください
+# なお、グラフの色は全て赤色にしてください
+ax2 = fig.add_subplot(2,2,2)
+ax2.plot(x2, y2, color="red")
+ax2.plot(x3, y3, color="red")
+# axesオブジェクトを2行2列に分割し、左下に (x4,y4) を描画してください
+# なお、グラフのスタイルは破線にしてください
+ax3 = fig.add_subplot(2,2,3)
+ax3.plot(x4, y4, linestyle="--")
+# axesオブジェクトを2行2列に分割し、右下に (x1,y1), (x2,y2), (x3,y3), (x4,y4) を重ねて描画してください
+# なお、グラフの色は全て青色にしてください
+ax4 = fig.add_subplot(2,2,4)
+ax4.plot(x1, y1, color="blue")
+ax4.plot(x2, y2, color="blue")
+ax4.plot(x3, y3, color="blue")
+ax4.plot(x4, y4, color="blue")
+plt.show()
+
+# 応用添削課題
+import matplotlib.pyplot as plt
+import numpy as np
+import math
+import time
+np.random.seed(100)
+X = 0  # 的に当たった回数です
+# 試行回数Nを指定してください。
+N = 10000
+# 四分円の境界の方程式[y=√1-x^2 (0<=x<=1)]を描画しています。
+circle_x = np.arange(0, 1, 0.001)
+circle_y = np.sqrt(1 - circle_x * circle_x)
+plt.figure(figsize=(5, 5))
+plt.plot(circle_x, circle_y)
+# N回の試行にかかる時間を計測します。
+start_time = time.perf_counter()
+#プロット用の空の配列を用意
+internal_x = []
+internal_y = []
+external_x = []
+external_y = []
+# N回の試行を行っています。
+for i in range(N):
+    # 0から1の間で一様乱数を発生させ、変数score_xに格納してください。
+    score_x = np.random.rand()
+    # 0から1の間で一様乱数を発生させ、変数score_yに格納してください。
+    score_y = np.random.rand()
+    if score_x * score_x + score_y * score_y <= 1:
+        # 的に入ったものはinternal_x, internal_yに追加してください。
+        internal_x.append(score_x)
+        internal_y.append(score_y)
+        # 得点Xを1追加してください
+        X += 1
+    else:
+        # 的から外れたものはexternal_x, external_yに追加してください。
+        external_x.append(score_x)
+        external_y.append(score_y)
+print("円内")
+print("internal_x：", internal_x)
+print("internal_y：", internal_y)
+print("円外")
+print("external_x：", external_x)
+print("external_y：", external_y)
+print("得点 X：", X)
+print()
+# piの近似値をここで計算してください。
+# 小数のpiを求めるため、明示的にXとNをfloat()に入れてください。
+pi = 4.0 * float(X) / float(N)
+print("piの近似値：", pi)
+# モンテカルロ法の実行時間を計算しています。
+end_time = time.perf_counter()
+time = end_time - start_time
+print("実行時間：", time)
+# 円周率の結果を表示
+print("円周率:%.6f" % pi)
+print("実行時間:%f" % (time))
+# 散布図を描画してください。四分円内にある点は赤で、四分円外にある点は青で描画してください。
+plt.scatter(internal_x, internal_y, color="red")
+plt.scatter(external_x, external_y, color="blue")
+# 結果を表示
+plt.grid(True)
+plt.xlabel('X')
+plt.ylabel('Y')
+plt.show()
