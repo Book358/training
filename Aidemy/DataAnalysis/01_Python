@@ -1,0 +1,38 @@
+# Python
+# (Aidemy データ分析講座(添削課題1))
+import numpy as np
+numbers = np.arange(1,36)
+def Ai_demy(numbers):
+    for n in numbers:
+        if n%5==0 and n%7==0:
+           print(str(n)+":Aidemy")
+        elif n%7==0:
+           print(str(n)+":demy")
+        elif n%5==0:
+           print(str(n)+":Ai")
+        else:
+           print(n)
+print(Ai_demy(numbers))
+
+# 応用添削課題
+def binary_search(numbers, target_number):
+  low=0
+  high=len(numbers) - 1
+  while low <= high:
+    middle_index = (low + high) // 2
+    if numbers[middle_index]==target_number:
+      return middle_index
+    elif numbers[middle_index]<target_number:
+      low = middle_index + 1
+    else:
+      high = middle_index - 1
+  return None
+# 探索するデータ
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+# 探索したい値
+target_number = 5
+# バイナリーサーチの実行
+if binary_search(numbers, target_number) != None:
+   print("{}は{}番目にあります".format(target_number, binary_search(numbers, target_number+1)))
+else:
+   print("{}はありません".format(target_number))
