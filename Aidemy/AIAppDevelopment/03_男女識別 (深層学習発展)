@@ -1,0 +1,94 @@
+# 男女識別 (深層学習発展)
+# (Aidemy AIアプリ開発講座(添削課題3))
+import os
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Input
+from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras import optimizers
+# お使いの仮想環境のディレクトリ構造等によってファイルパスは異なります。
+path_male = os.listdir('./6100_gender_recognition_data/male/')
+path_female = os.listdir('./6100_gender_recognition_data/female/')
+img_male = []
+img_female = []
+for i in range(len(path_male)):
+    img = cv2.imread('./6100_gender_recognition_data/male/' + path_male[i])
+    b,g,r = cv2.split(img)
+    img = cv2.merge([r,g,b])
+    img = cv2.resize(img, (32,32))
+    img_male.append(img)
+for i in range(len(path_female)):
+    img = cv2.imread('./6100_gender_recognition_data/female/' + path_female[i])
+    b,g,r = cv2.split(img)
+    img = cv2.merge([r,g,b])
+    img = cv2.resize(img, (32,32))
+    img_female.append(img)
+X = np.array(img_male + img_female)
+y = np.array([0]*len(img_male) + [1]*len(img_female))
+rand_index = np.random.permutation(np.arange(len(X)))
+X = X[rand_index]
+y = y[rand_index]
+# データの分割
+X_train = X[:int(len(X)*0.8)]
+y_train = y[:int(len(y)*0.8)]
+X_test = X[int(len(X)*0.8):]
+y_test = y[int(len(y)*0.8):]
+# ここに解答を記述してください
+#---------------------------------------------------------------------------------
+# vgg16のインスタンスの生成
+#---------------------------
+input_tensor = Input(shape=(32, 32, 3))
+vgg16 = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor)
+#---------------------------
+top_model = Sequential()
+top_model.add(Flatten(input_shape=vgg16.output_shape[1:]))
+top_model.add(Dense(256, activation='relu'))
+top_model.add(Dense(1, activation='sigmoid'))
+# モデルの連結
+#---------------------------
+model = Model(inputs=vgg16.input, outputs=top_model(vgg16.output))
+#---------------------------
+# vgg16の重みの固定
+#---------------------------
+for layer in model.layers[:19]:
+    layer.trainable = False
+#---------------------------
+model.compile(loss='categorical_crossentropy',
+              optimizer=optimizers.SGD(lr=1e-4, momentum=0.9),
+              metrics=['accuracy'])
+
+model.fit(X_train, y_train, batch_size=100, epochs=1)
+#---------------------------------------------------------------------------------
+# 画像を一枚受け取り、男性か女性かを判定して返す関数
+def pred_gender(img):
+   # ここに解答を記述してください
+   img = cv2.resize(img, (32, 32))
+   pred = np.argmax(model.predict(np.array([img])))
+   if pred == 0:
+       return 'male'
+   else:
+       return 'female'
+# 画像を一枚受け取り、男性か女性かを判定する関数
+def gender(img):
+   img = cv2.resize(img, (32, 32))
+   pred = model.predict(np.array([img]))[0]
+   if pred == 0:
+       return 'male'
+   else:
+       return 'female'
+# 精度の評価（適切なモデル名に変えて、コメントアウトを外してください）
+scores = model.evaluate(X_test, y_test, verbose=1)
+print('Test loss:', scores[0])
+print('Test accuracy:', scores[1])
+# pred_gender関数に顔写真を渡して性別を予測します
+for i in range(5):
+    # pred_gender関数に顔写真を渡して性別を予測します
+    img = cv2.imread('./6100_gender_recognition_data/male/' + path_male[i])
+    b,g,r = cv2.split(img)
+    img = cv2.merge([r,g,b])
+    plt.imshow(img)
+    plt.show()
+    print(pred_gender(img))
