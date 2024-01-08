@@ -33,7 +33,7 @@ def scraping(url):
         results.append(data)
     return results
 # ベースのURLを読み込み、BeautifulSoupでパースしてください
-response = requests.get("http://scraping.aidemy.net")
+response = requests.get(base_url)
 soup = BeautifulSoup(response.text, "lxml")
 # ページの下の1～5のボタンのタグ要素から全5ページのURLを取得してください
 urls = soup.find_all("a")
@@ -41,7 +41,7 @@ url_list = []
 # url_listにそれぞれのページのURLを追加してください
 for url in urls:
     url = url.get("href")
-    url_list.append("http://scraping.aidemy.net" + url)
+    url_list.append(base_url + url)
 data = []
 # url_listの中の各URLに対して、定義したscraping関数を実行していきます
 for url in url_list:
