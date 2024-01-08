@@ -1,0 +1,44 @@
+# CNNを用いた画像認識
+# (Aidemy AIアプリ開発講座(添削課題2))
+from tensorflow.keras import optimizers
+from tensorflow.keras.applications.vgg16 import VGG16
+from tensorflow.keras.datasets import cifar10
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Input
+from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.utils import to_categorical
+import matplotlib.pyplot as plt
+import numpy as np
+# データのロードをしてください
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
+y_train = to_categorical(y_train)
+y_test = to_categorical(y_test)
+# input_tensorの定義をして、vggのImageNetによる学習済みモデルを作成してください
+input_tensor = Input(shape=(32, 32, 3))
+vgg16 = VGG16(include_top=False, weights='imagenet', input_tensor=input_tensor)
+# 特徴量抽出部分のモデルを作成しています
+top_model = Sequential()
+top_model.add(Flatten(input_shape=vgg16.output_shape[1:]))
+top_model.add(Dense(256, activation='sigmoid'))
+top_model.add(Dropout(0.5))
+top_model.add(Dense(10, activation='softmax'))
+# vgg16とtop_modelを連結してください
+model = Model(inputs=vgg16.input, outputs=top_model(vgg16.output))
+# 以下のfor文を完成させて、15層目までの重みを固定させてください
+for layer in model.layers[:15]:
+    layer.trainable = False
+#　学習の前に、モデル構造を確認してください
+model.summary()
+# コンパイルをしています
+model.compile(loss='categorical_crossentropy',
+              optimizer=optimizers.SGD(learning_rate=1e-4, momentum=0.9),
+              metrics=['accuracy'])
+# すでに学習済みのモデルを保存している場合、以下のように学習済みモデルを取得できます
+# model.load_weights('param_vgg_15.hdf5')
+# バッチサイズ32、エポック数は3で学習を行ってください
+model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=32, epochs=3)
+# 以下の式でモデルを保存できます
+model.save_weights('param_vgg_15.hdf5')
+# 精度の評価をしています
+scores = model.evaluate(X_test, y_test, verbose=1)
+print('Test loss:', scores[0])
+print('Test accuracy:', scores[1])
