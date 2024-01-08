@@ -1,0 +1,54 @@
+# スクレイピング
+# (Aidemy AIアプリ開発講座(添削課題1))
+import requests
+from bs4 import BeautifulSoup
+# はじめに、ベースとなる1ページ目のURLを定義します
+base_url = "http://scraping.aidemy.net"
+base_url
+# スクレイピングするURLを引数に取る関数を定義します
+# 日付とタイトルのデータをまとめたリストを返します
+def scraping(url):
+    # urlのデータを読み込み、BeautifulSoupによるパースをしてください
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "lxml")
+    # 手順1に従い、データの入ったボックスを全て取得して変数boxesに代入してください
+    boxes = soup.find_all("li")
+    # 手順3の、ページ内全写真分のデータを収めるリストを定義します
+    results = []
+    # 手順2に従い、1つずつのデータボックスから必要なデータを取得してください
+    for box in boxes:
+        # データボックスから直接日付データを取得し、変数dateに代入してください
+        date = box.find("p", class_="release-date")
+        # dateのtext要素を取り出して、変数dateに再代入してください
+        date = date.get_text()
+        # 以下2行は日付書式変更部分です
+        date = date.split("-")
+        date = "{}-{:0>2}-{:0>2}".format(date[0], date[1], date[2])
+        # データボックスから直接タイトルデータを取得し、変数titleに代入してください
+        title = box.find("h3")
+        # titleのtext要素を取り出して、変数titleに再代入してください
+        title = title.get_text()
+        # 手順2に従い、日付とタイトルだけのリストを作成してください
+        data = [date, title]
+        results.append(data)
+    return results
+# ベースのURLを読み込み、BeautifulSoupでパースしてください
+response = requests.get("http://scraping.aidemy.net")
+soup = BeautifulSoup(response.text, "lxml")
+# ページの下の1～5のボタンのタグ要素から全5ページのURLを取得してください
+urls = soup.find_all("a")
+url_list = []
+# url_listにそれぞれのページのURLを追加してください
+for url in urls:
+    url = url.get("href")
+    url_list.append("http://scraping.aidemy.net" + url)
+data = []
+# url_listの中の各URLに対して、定義したscraping関数を実行していきます
+for url in url_list:
+    # scraping関数の戻り値である1つにまとめたリストを、変数dataに足し集めてください
+    data += scraping(url)
+# 全写真分のデータリストを日付基準で並び替えてください
+data.sort()
+# 並び替えたdataを「日付: タイトル」の形で出力してください
+for x in data:
+    print(x[0], "：", x[1])
