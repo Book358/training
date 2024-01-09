@@ -1,0 +1,40 @@
+# 順伝播型ネットワーク
+# (Aidemy E資格対策講座(添削課題1))
+import numpy as np
+def sigmoid(u):
+    return 1 / (1 + np.exp(-u))
+def softmax(u):
+    return np.exp(u) / np.sum(np.exp(u))
+# 順伝播型ネットワーク
+def forward(x):
+    W1 = np.array([[0.3, 0.5], [0.4, 0.6]])
+    W2 = np.array([[0.3, 0.5], [0.4,0.6]])
+    u1 = x.dot(W1)+1
+    z1 = sigmoid(u1)
+    u2 = z1.dot(W2)+1
+    y = softmax(u2)
+    return y, z1
+x = np.array([[1, 0.5]])
+y, z1 = forward(x)
+# 誤差逆伝播法
+def back_propagation(x, z1, y, d):
+    W1 = np.array([[0.3, 0.5], [0.4, 0.6]])
+    W2 = np.array([[0.3, 0.5], [0.4,0.6]])
+    # 順伝播型ネットワークで計算した出力と教師データとの誤差を計算してください。
+    error_range = y - d
+    grad_W2 = z1.T.dot(error_range)
+    # 活性化関数の微分
+    sigmoid_diff = z1 * (1 - z1)
+    delta = error_range.dot(W2.T) * sigmoid_diff
+    grad_W1 = x.T.dot(delta)
+    W2 -= learning_rate * grad_W2
+    W1 -= learning_rate * grad_W1
+    return W1,W2
+# 教師データ
+d = np.array([[1, 0]])
+# 学習データ
+learning_rate = 0.005
+W1,W2 = back_propagation(x, z1, y, d)
+print(W1)
+print()
+print(W2)
