@@ -1,0 +1,23 @@
+# 深層モデルのための最適化
+# (Aidemy E資格対策講座(添削課題2))
+import numpy as np
+# モメンタム法の実装
+class Momentum:
+    # 初期化
+    def __init__(self, lr=0.01, momentum=0.9):
+        self.lr = lr              # 学習率
+        self.momentum = momentum  # vの調整項
+        self.v = None             # 速度
+    # 更新
+    def update(self, params, grads):
+        # vになにもない時、配列を0で初期化
+        if self.v is None:  # 初回のみ
+            self.v = {}
+            for key, value in params.items():
+                self.v[key] = np.zeros_like(value)  # 全ての要素が0
+        # 数式の実装 (パラメータごとに値を更新)
+        for key in params.keys():
+            # vを計算してください
+            self.v[key] = self.mormentum * self.v[key] - self.lr * grads[key]
+            # paramsを更新してください
+            params[key] += self.v[key]
