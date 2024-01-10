@@ -18,6 +18,6 @@ class Momentum:
         # 数式の実装 (パラメータごとに値を更新)
         for key in params.keys():
             # vを計算してください
-            self.v[key] = self.mormentum * self.v[key] - self.lr * grads[key]
+            self.v[key] = self.momentum * self.v[key] - self.lr * grads[key]
             # paramsを更新してください
             params[key] += self.v[key]
