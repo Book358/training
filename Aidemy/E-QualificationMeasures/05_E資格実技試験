@@ -2,7 +2,6 @@
 # (Aidemy E資格対策講座(実技試験))
 import pandas as pd
 import numpy as np
-from pandas import DataFrame
 from sklearn.datasets import load_boston
 from sklearn.decomposition import PCA
 import seaborn as sns
