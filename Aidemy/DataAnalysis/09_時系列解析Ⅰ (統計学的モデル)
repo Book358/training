@@ -1,31 +1,16 @@
 # 時系列解析Ⅰ (統計学的モデル)
 # (Aidemy データ分析講座(添削課題9))
-import warnings
-import itertools
 import pandas as pd
 import numpy as np
+import warnings
+import itertools
 import statsmodels.api as sm
 import matplotlib.pyplot as plt
-%matplotlib inline
-sales_car = pd.read_csv("./5060_tsa_data/monthly-car-sales-in-quebec-1960.csv")
-print("sales_car (データセット)")
-print(sales_car.head(3))
-print(sales_car.tail(3))
-print()
-# indexに期間を代入してください。期間は"1960-01-31"から"1968-12-31"としてください
-index = pd.date_range("1960-01-31", "1968-12-31", freq="M")
-# sales_carのインデックスにindexを代入してください
-sales_car.index = index
-print("sales_car.index (インデックスに期間を代入)")
-print(sales_car.index)
-print()
-# sales_carの"Month"カラムを削除してください
-del sales_car["Month"]
-print("sales_car (Monthカラムを削除)")
-print(sales_car.head(3))
-print(sales_car.tail(3))
-print()
-# orderの最適化関数
+from IPython.core.interactiveshell import InteractiveShell
+pd.options.display.max_rows = 5
+InteractiveShell.ast_node_interactivity = "all"
+
+# 関数 (orderの最適化)
 def selectparameter(DATA, s):
     p = d = q = range(0, 2)
     pdq = list(itertools.product(p, d, q))
@@ -44,35 +29,28 @@ def selectparameter(DATA, s):
             except:
                 continue
     return parameters[np.argmin(BICs)]
-# SARIMAモデルを用いて時系列解析をしてください
-# 周期は月ごとのデータであることも考慮してs=12となります
-# orderはselectparameter関数の0インデックス, seasonal_orderは1インデックスに格納されています
-# SARIMAの最適パラメータ (selectparameter())
-best_params = selectparameter(sales_car, 12)  # データ, 季節変動の周期
-print("SARIMAの最適パラメータ (周期：12カ月)")
-print(best_params)
-print()
-# SARIMAモデル構築 (sm.tsa.statespace.SARIMAX().fit())
-SARIMA_sales_car = sm.tsa.statespace.SARIMAX(sales_car,                        # データ
-                                             order=(0,1,1),                    # ARIMAパラメータ(p, d, q)
-                                             seasonal_order=(1,1,0,12)).fit()  # 季節パラメータ(sp, sd, sq, s)
-# p：自己相関度 (モデルが直前 p個の値を用いて予測されるのか)
-# d：誘導       (時系列データを定常にするために d次の階差が必要)
-# q：移動平均   (モデルが直前 q個の値に影響を受ける)
-# sp：季節性自己相関
-# sd：季節性導出
-# sq：季節性移動平均
-print("BIC (ベイズ情報量基準)")
-print(SARIMA_sales_car.bic)
-print("※値が低いほどパラメーターの値は適切")
-print()
-# predに予測期間での予測値を代入してください
-pred = SARIMA_sales_car.predict("1968-01-31", "1972-01-31")
-print("SARIMA予測値 (1968-01-31～1972-01-31)")
-print(pred.head(3))
-print(pred.tail(3))
-print()
-# グラフを可視化してください。予測値は赤色でプロットしてください
-plt.plot(sales_car)
+
+# データセット
+data = pd.read_csv("./5060_tsa_data/monthly-car-sales-in-quebec-1960.csv")
+data
+data.index = pd.date_range("1960-01-31", "1968-12-31", freq="M")
+data
+del data["Month"]
+data
+
+# SARIMAの最適パラメータ (周期：12カ月)
+param = selectparameter(data, 12)
+param
+
+# モデル構築 (SARIMA)
+SARIMA = sm.tsa.statespace.SARIMAX(data, order=(0,1,1), seasonal_order=(1,1,0,12)).fit()
+SARIMA.bic
+
+# 予測値
+pred = SARIMA.predict("1968-01-31", "1972-01-31")
+pred
+
+# データのプロット
+plt.plot(data)
 plt.plot(pred, color="r")
 plt.show()
