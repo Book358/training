@@ -1,0 +1,52 @@
+# LIME (チュートリアル)
+!pip install lime
+import numpy as np
+from sklearn.datasets import fetch_20newsgroups
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import f1_score
+from sklearn.pipeline import make_pipeline
+from lime.lime_text import LimeTextExplainer
+from __future__ import print_function
+
+train = fetch_20newsgroups(subset='train', categories=['alt.atheism', 'soc.religion.christian'])
+test = fetch_20newsgroups(subset='test', categories=['alt.atheism', 'soc.religion.christian'])
+class_names = ['atheism', 'christian']
+
+vector = TfidfVectorizer(lowercase=False)
+train_v = vector.fit_transform(train.data)
+test_v = vector.transform(test.data)
+
+model = RandomForestClassifier(n_estimators=500)
+model.fit(train_v, train.target)
+pred = model.predict(test_v)
+f1_score(test.target, pred, average='binary')
+
+c = make_pipeline(vector, model)
+c.predict_proba([test.data[0]])
+
+explainer = LimeTextExplainer(class_names=class_names)
+
+idx = 83
+exp = explainer.explain_instance(test.data[idx], c.predict_proba, num_features=6)
+print('Document id: %d' % idx)
+print('Probability(christian) =', c.predict_proba([test.data[idx]])[0,1])
+print('True class: %s' % class_names[test.target[idx]])
+
+exp.as_list()
+
+print('Original prediction:', model.predict_proba(test_v[idx])[0,1])
+tmp = test_v[idx].copy()
+tmp[0,vector.vocabulary_['Posting']] = 0
+tmp[0,vector.vocabulary_['Host']] = 0
+print('Prediction removing some features:', model.predict_proba(tmp)[0,1])
+print('Difference:', model.predict_proba(tmp)[0,1] - model.predict_proba(test_v[idx])[0,1])
+
+%matplotlib inline
+fig = exp.as_pyplot_figure()
+
+exp.show_in_notebook(text=False)
+
+exp.save_to_file('/tmp/oi.html')
+
+exp.show_in_notebook(text=True)
